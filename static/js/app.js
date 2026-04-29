@@ -253,17 +253,47 @@ function updateAnalysis(data) {
 
 // 清空对话
 clearBtn.addEventListener('click', async () => {
+    // 1. 处理加载状态
+    if (isLoading) {
+        isLoading = false;
+        sendBtn.disabled = false;
+        const loadingElements = document.querySelectorAll('[id^="loading-"]');
+        loadingElements.forEach(el => el.remove());
+    }
+
+    // 2. 清除服务端会话
     if (sessionId) {
         try {
             await fetch(`/api/chat/${sessionId}`, { method: 'DELETE' });
-        } catch (e) { /* 忽略 */ }
+        } catch (e) {
+            console.log('清除会话失败:', e);
+        }
     }
     sessionId = null;
-    chatMessages.innerHTML = '';
-    analysisContent.innerHTML = '<div class="analysis-placeholder">发送问题后，这里将显示意图识别、信息抽取和分析结果</div>';
-    appendMessage('bot', '对话已清空，有什么新的问题吗？', [
-        '如何选课？', '奖学金种类', '补考报名', '图书馆时间'
-    ]);
+
+    // 3. 保持布局稳定：使用 opacity 代替 display 避免 Grid 塌陷
+    chatMessages.style.opacity = '0';
+    chatMessages.style.pointerEvents = 'none';
+
+    // 清空内容
+    while (chatMessages.firstChild) {
+        chatMessages.removeChild(chatMessages.firstChild);
+    }
+
+    // 重置分析面板
+    if (analysisContent) {
+        analysisContent.innerHTML = '<div class="analysis-placeholder">发送问题后，这里将显示意图识别、信息抽取和分析结果</div>';
+    }
+
+    // 4. 恢复显示并添加新消息
+    requestAnimationFrame(() => {
+        chatMessages.style.opacity = '1';
+        chatMessages.style.pointerEvents = 'auto';
+
+        appendMessage('bot', '对话已清空，有什么新的问题吗？', [
+            '如何选课？', '奖学金种类', '补考报名', '图书馆时间'
+        ]);
+    });
 });
 
 // 键盘事件

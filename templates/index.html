@@ -5,9 +5,100 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>校园智能办事助手</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        /* 用户信息区域样式 - 放在 header 右侧 */
+        .user-info-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            color: white;
+        }
+
+        .user-info-bar .username {
+            font-weight: 500;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .user-info-bar .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .user-info-bar .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 未登录提示 */
+        .login-prompt {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .login-prompt-content {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .login-prompt-content h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .login-prompt-content p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .login-prompt-content .btn-login-now {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .login-prompt-content .btn-login-now:hover {
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 <body>
-    <div class="app-container">
+    <!-- 未登录提示 -->
+    <div class="login-prompt" id="loginPrompt" style="display: none;">
+        <div class="login-prompt-content">
+            <h2>🔒 请先登录</h2>
+            <p>登录后才能使用校园智能办事助手</p>
+            <button class="btn-login-now" onclick="window.location.href='/login'">立即登录</button>
+        </div>
+    </div>
+
+    <div class="app-container" id="appContainer" style="display: none;">
         <!-- 侧边栏 -->
         <aside class="sidebar">
             <div class="sidebar-header">
@@ -23,10 +114,10 @@
                         <span class="nav-icon">📚</span>课程咨询
                     </button>
                     <button class="nav-item" data-intent="scholarship">
-                        <span class="nav-icon">🏆</span>奖学金
+                        <span class="nav-icon"></span>奖学金
                     </button>
                     <button class="nav-item" data-intent="internship">
-                        <span class="nav-icon">💼</span>实习就业
+                        <span class="nav-icon"></span>实习就业
                     </button>
                     <button class="nav-item" data-intent="academic_affairs">
                         <span class="nav-icon">📋</span>教务事务
@@ -50,6 +141,11 @@
             <header class="chat-header">
                 <h2>💬 智能问答</h2>
                 <div class="header-actions">
+                    <!-- 用户信息栏 -->
+                    <div class="user-info-bar" id="userInfoBar">
+                        <span class="username" id="displayUsername"> 用户</span>
+                        <button class="logout-btn" onclick="logout()">退出登录</button>
+                    </div>
                     <button id="clearBtn" class="btn-icon" title="清空对话">🗑️</button>
                 </div>
             </header>
@@ -101,5 +197,28 @@
     </div>
 
     <script src="/static/js/app.js"></script>
+    <script>        // 检查登录状态
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('access_token');
+            const username = localStorage.getItem('username');
+            if (token && username) {
+                document.getElementById('displayUsername').textContent = `👤 ${username}`;
+                document.getElementById('appContainer').style.display = 'flex';
+                document.getElementById('loginPrompt').style.display = 'none';
+            } else {
+                document.getElementById('appContainer').style.display = 'none';
+                document.getElementById('loginPrompt').style.display = 'flex';
+            }
+        });
+
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('username');
+                document.cookie = 'access_token=; path=/; max-age=0';
+                window.location.href = '/login';
+            }
+        }
+    </script>
 </body>
 </html>
