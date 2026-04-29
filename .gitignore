@@ -1,0 +1,94 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+.env.bak
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment variables
+.env
+
+# Data files
+data/*.json
+data/*.docx
+crawler/output/*
+task/data/*.json
+task/output/*
+
+# Logs
+*.log
+logs/
+.playwright-cli/
+
+# Models and checkpoints
+*.pth
+*.pt
+*.bin
+*.model
+models/
+checkpoints/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pytorch
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# UV package manager
+uv.lock
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/

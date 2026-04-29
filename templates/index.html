@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园智能办事助手</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🎓</span>
+                    <h1>校园智能助手</h1>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <h3>快捷服务</h3>
+                    <button class="nav-item" data-intent="course">
+                        <span class="nav-icon">📚</span>课程咨询
+                    </button>
+                    <button class="nav-item" data-intent="scholarship">
+                        <span class="nav-icon">🏆</span>奖学金
+                    </button>
+                    <button class="nav-item" data-intent="internship">
+                        <span class="nav-icon">💼</span>实习就业
+                    </button>
+                    <button class="nav-item" data-intent="academic_affairs">
+                        <span class="nav-icon">📋</span>教务事务
+                    </button>
+                    <button class="nav-item" data-intent="competition">
+                        <span class="nav-icon">🎯</span>竞赛活动
+                    </button>
+                    <button class="nav-item" data-intent="campus_life">
+                        <span class="nav-icon">🏠</span>校园生活
+                    </button>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <p>基于 DeepSeek + FastGPT</p>
+                <p class="sub">RAG知识库问答系统</p>
+            </div>
+        </aside>
+
+        <!-- 主聊天区域 -->
+        <main class="chat-main">
+            <header class="chat-header">
+                <h2>💬 智能问答</h2>
+                <div class="header-actions">
+                    <button id="clearBtn" class="btn-icon" title="清空对话">🗑️</button>
+                </div>
+            </header>
+
+            <div class="chat-messages" id="chatMessages">
+                <!-- 欢迎消息 -->
+                <div class="message bot">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            你好！我是校园智能办事助手，可以帮你解答课程、奖学金、实习就业、教务事务、竞赛活动和校园生活等方面的问题。请问有什么可以帮你的？
+                        </div>
+                        <div class="quick-replies">
+                            <button class="quick-reply-btn" onclick="sendQuickReply('如何选课？')">如何选课？</button>
+                            <button class="quick-reply-btn" onclick="sendQuickReply('奖学金有哪些种类？')">奖学金种类</button>
+                            <button class="quick-reply-btn" onclick="sendQuickReply('补考怎么报名？')">补考报名</button>
+                            <button class="quick-reply-btn" onclick="sendQuickReply('图书馆开放时间？')">图书馆时间</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 输入区域 -->
+            <div class="chat-input-area">
+                <div class="input-container">
+                    <textarea
+                        id="userInput"
+                        placeholder="输入你的问题..."
+                        rows="1"
+                        onkeydown="handleKeyDown(event)"
+                    ></textarea>
+                    <button id="sendBtn" class="send-btn" onclick="sendMessage()">
+                        发送
+                    </button>
+                </div>
+                <div class="input-hint">按 Enter 发送，Shift+Enter 换行</div>
+            </div>
+        </main>
+
+        <!-- 右侧分析面板 -->
+        <aside class="analysis-panel" id="analysisPanel">
+            <h3>🔍 分析结果</h3>
+            <div class="analysis-content" id="analysisContent">
+                <div class="analysis-placeholder">
+                    发送问题后，这里将显示意图识别、信息抽取和分析结果
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
