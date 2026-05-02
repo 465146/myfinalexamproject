@@ -131,7 +131,7 @@
                 </div>
             </nav>
             <div class="sidebar-footer">
-                <p>基于 DeepSeek + FastGPT</p>
+                <p>基于 DeepSeek + 本地RAG</p>
                 <p class="sub">RAG知识库问答系统</p>
             </div>
         </aside>
@@ -139,8 +139,16 @@
         <!-- 主聊天区域 -->
         <main class="chat-main">
             <header class="chat-header">
-                <h2>💬 智能问答</h2>
+                <div class="chat-title-area">
+                    <h2>💬 智能问答</h2>
+                    <span class="mode-badge" id="modeBadge">📚 知识库</span>
+                </div>
                 <div class="header-actions">
+                    <!-- AI 模式切换 -->
+                    <div class="ai-toggle" id="aiToggle">
+                        <button class="ai-toggle-btn active" data-ai="rag">📚 知识库</button>
+                        <button class="ai-toggle-btn" data-ai="deepseek">🧠 DeepSeek</button>
+                    </div>
                     <!-- 用户信息栏 -->
                     <div class="user-info-bar" id="userInfoBar">
                         <span class="username" id="displayUsername"> 用户</span>
@@ -195,30 +203,73 @@
             </div>
         </aside>
     </div>
-
     <script src="/static/js/app.js"></script>
-    <script>        // 检查登录状态
-        window.addEventListener('load', () => {
+    <script>
+        // 检查登录状态并验证 token 有效性
+        window.addEventListener('load', async () => {
             const token = localStorage.getItem('access_token');
             const username = localStorage.getItem('username');
+
             if (token && username) {
-                document.getElementById('displayUsername').textContent = `👤 ${username}`;
-                document.getElementById('appContainer').style.display = 'flex';
-                document.getElementById('loginPrompt').style.display = 'none';
+                // 验证 token 是否有效
+                try {
+                    const response = await fetch('/api/auth/me', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        // Token 有效，显示应用
+                        document.getElementById('displayUsername').textContent = `👤 ${username}`;
+                        document.getElementById('appContainer').style.display = 'flex';
+                        document.getElementById('loginPrompt').style.display = 'none';
+                    } else {
+                        // Token 无效，清除本地存储并跳转到登录页
+                        clearAuthAndRedirect();
+                    }
+                } catch (error) {
+                    console.error('Token validation error:', error);
+                    clearAuthAndRedirect();
+                }
             } else {
-                document.getElementById('appContainer').style.display = 'none';
-                document.getElementById('loginPrompt').style.display = 'flex';
+                // 没有 token，跳转到登录页
+                clearAuthAndRedirect();
             }
         });
 
-        function logout() {
+        // 清除认证信息并重定向
+        function clearAuthAndRedirect() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('username');
+            document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            window.location.href = '/login';
+        }
+
+        async function logout() {
             if (confirm('确定要退出登录吗？')) {
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('username');
-                document.cookie = 'access_token=; path=/; max-age=0';
-                window.location.href = '/login';
+                try {
+                    const token = localStorage.getItem('access_token');
+
+                    // 调用后端登出接口，将当前令牌加入黑名单
+                    if (token) {
+                        await fetch('/api/auth/logout', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Logout error:', error);
+                } finally {
+                    // 无论后端调用是否成功，都清除本地存储
+                    clearAuthAndRedirect();
+                }
             }
         }
     </script>
 </body>
 </html>
+

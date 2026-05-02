@@ -62,8 +62,8 @@ def _load_bert_model():
 
     try:
         _bert_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        _bert_tokenizer = AutoTokenizer.from_pretrained(str(BERT_MODEL_DIR))
-        _bert_model = AutoModelForSequenceClassification.from_pretrained(str(BERT_MODEL_DIR))
+        _bert_tokenizer = AutoTokenizer.from_pretrained(str(BERT_MODEL_DIR), local_files_only=True)
+        _bert_model = AutoModelForSequenceClassification.from_pretrained(str(BERT_MODEL_DIR), local_files_only=True)
         _bert_model.to(_bert_device)
         _bert_model.eval()
         print(f"[BERT] 意图分类模型加载成功 (device={_bert_device})")
@@ -116,6 +116,23 @@ def _bert_predict(text: str) -> dict | None:
         return None
 
 
+# ====== JSON 响应解析工具 ======
+def _parse_json_response(content: str) -> dict:
+    """从 LLM 返回内容中解析 JSON（兼容 markdown 代码块包裹）"""
+    content = content.strip()
+    if content.startswith("```"):
+        # 剥离 markdown 代码块 ```json ... ```
+        lines = content.split("\n")
+        # 去掉首行的 ```json 或 ```
+        if lines[0].startswith("```"):
+            lines = lines[1:]
+        # 去掉末行的 ```
+        if lines and lines[-1].startswith("```"):
+            lines = lines[:-1]
+        content = "\n".join(lines)
+    return json.loads(content.strip())
+
+
 # ====== 意图识别（BERT 优先，DeepSeek fallback） ======
 def intent_recognition(query: str) -> dict:
     """
@@ -150,13 +167,8 @@ def intent_recognition(query: str) -> dict:
     ]
 
     try:
-        content = chat_deepseek(messages, temperature=0.1)
-        content = content.strip()
-        if content.startswith("```"):
-            content = content.split("```")[1]
-            if content.startswith("json"):
-                content = content[4:]
-        result = json.loads(content.strip())
+        content = chat_deepseek(messages, temperature=0.1, response_format={"type": "json_object"})
+        result = _parse_json_response(content)
         result["method"] = "deepseek"
         return result
     except Exception as e:
@@ -195,13 +207,8 @@ def information_extraction(query: str, intent: str = "") -> dict:
     ]
 
     try:
-        content = chat_deepseek(messages, temperature=0.1)
-        content = content.strip()
-        if content.startswith("```"):
-            content = content.split("```")[1]
-            if content.startswith("json"):
-                content = content[4:]
-        result = json.loads(content.strip())
+        content = chat_deepseek(messages, temperature=0.1, response_format={"type": "json_object"})
+        result = _parse_json_response(content)
         return result
     except Exception as e:
         print(f"信息抽取失败: {e}")

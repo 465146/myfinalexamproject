@@ -7,8 +7,46 @@ const clearBtn = document.getElementById('clearBtn');
 const analysisContent = document.getElementById('analysisContent');
 
 let sessionId = null;  // 服务端维护的会话ID
-let currentAiType = 'fastgpt';  // 当前AI类型
+let currentAiType = 'rag';  // 当前AI类型
 let isLoading = false;
+
+// AI 模式切换
+document.querySelectorAll('.ai-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const newType = btn.dataset.ai;
+        if (newType === currentAiType) return;
+
+        // 更新按钮状态
+        document.querySelectorAll('.ai-toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // 切换 AI 类型并重置会话（不同 AI 会话历史独立）
+        currentAiType = newType;
+        sessionId = null;
+
+        // 更新标题栏模式标签
+        updateModeBadge();
+
+        appendMessage('bot',
+            currentAiType === 'rag'
+                ? '已切换到「知识库」模式，将通过本地向量检索查找校园知识库，再用 DeepSeek 为你生成答案。'
+                : '已切换到「DeepSeek」模式，将使用大模型直接对话。'
+        );
+    });
+});
+
+// 更新标题栏模式标签样式
+function updateModeBadge() {
+    const badge = document.getElementById('modeBadge');
+    if (!badge) return;
+    if (currentAiType === 'rag') {
+        badge.textContent = '📚 知识库(RAG)';
+        badge.classList.remove('deepseek-mode');
+    } else {
+        badge.textContent = '🧠 DeepSeek';
+        badge.classList.add('deepseek-mode');
+    }
+}
 
 // 初始化侧边栏导航
 document.querySelectorAll('.nav-item').forEach(item => {
@@ -240,7 +278,7 @@ function updateAnalysis(data) {
         <h4>⚙️ 当前模式</h4>
         <div class="entity-item">
             <span class="entity-type">AI</span>
-            <span class="entity-value">${data.ai_type === 'fastgpt' ? 'FastGPT 知识库' : 'DeepSeek 对话'}</span>
+            <span class="entity-value">${(data.ai_type === 'rag' || data.ai_type === 'fastgpt') ? '本地 RAG 知识库' : 'DeepSeek 对话'}</span>
         </div>
     </div>`;
 

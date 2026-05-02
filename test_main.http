@@ -1,11 +1,26 @@
 # Test your FastAPI endpoints
 
-GET http://127.0.0.1:8000/
+GET http://127.0.0.1:8000/api/
 Accept: application/json
 
 ###
 
-GET http://127.0.0.1:8000/hello/User
-Accept: application/json
+POST http://127.0.0.1:8000/api/chat
+Content-Type: application/json
+
+{
+  "question": "有哪些奖学金？",
+  "session_id": "",
+  "ai_type": "rag"
+}
+
+###
+
+POST http://127.0.0.1:8000/api/intent
+Content-Type: application/json
+
+{
+  "question": "如何选课？"
+}
 
 ###

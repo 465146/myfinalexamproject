@@ -8,10 +8,10 @@ from app.nlp.tasks import (
 )
 from app.services.llm_service import (
     chat_deepseek,
-    chat_fastgpt,
     CAMPUS_SYSTEM_PROMPT,
 )
-from app.services.rag_service import is_fastgpt_available
+from app.services.rag_service import rag_chat
+from app.utils.text import strip_markdown
 
 # 服务端会话历史 {session_id: [messages]}
 conversation_history: Dict[str, List[dict]] = {}
@@ -41,10 +41,19 @@ def clear_session(session_id: str):
     return len(keys_to_delete) > 0
 
 
+def _call_deepseek(session_id: str, question: str) -> tuple[str, list]:
+    """调用 DeepSeek 并维护会话历史，返回 (answer, sources)"""
+    history = _init_session(session_id, "deepseek")
+    history.append({"role": "user", "content": question})
+    answer = chat_deepseek(history, temperature=0.7)
+    history.append({"role": "assistant", "content": answer})
+    return answer, []
+
+
 def process_query(
     question: str,
     session_id: str = "",
-    ai_type: str = "fastgpt",
+    ai_type: str = "rag",
 ) -> dict:
     """
     智能体主调度流程：
@@ -64,37 +73,25 @@ def process_query(
     # Step 2: 信息抽取
     extraction_result = information_extraction(question, intent)
 
-    # Step 3: 选择 AI 类型进行对话（参考 app.py 的做法）
-    if ai_type == "fastgpt" and is_fastgpt_available():
-        # 使用 FastGPT 知识库 RAG 问答
-        history = _init_session(session_id, "fastgpt")
+    # Step 3: 选择 AI 类型进行对话（"fastgpt" 保持向后兼容）
+    if ai_type in ("rag", "fastgpt"):
+        history = _init_session(session_id, "rag")
         history.append({"role": "user", "content": question})
 
         try:
-            answer = chat_fastgpt(history, temperature=0.3)
+            answer, sources = rag_chat(history, temperature=0.3)
             history.append({"role": "assistant", "content": answer})
-            sources = [{"source": "FastGPT知识库", "content": "基于校园知识库检索结果"}]
         except Exception as e:
-            print(f"FastGPT 调用失败，降级到 DeepSeek: {e}")
-            # 降级到 DeepSeek
-            history_deepseek = _init_session(session_id, "deepseek")
-            history_deepseek.append({"role": "user", "content": question})
-            answer = chat_deepseek(history_deepseek, temperature=0.7)
-            history_deepseek.append({"role": "assistant", "content": answer})
-            sources = []
+            print(f"本地 RAG 调用失败，降级到 DeepSeek: {e}")
+            answer, sources = _call_deepseek(session_id, question)
     else:
-        # 使用 DeepSeek 直接对话
-        history = _init_session(session_id, "deepseek")
-        history.append({"role": "user", "content": question})
-        answer = chat_deepseek(history, temperature=0.7)
-        history.append({"role": "assistant", "content": answer})
-        sources = []
+        answer, sources = _call_deepseek(session_id, question)
 
     # 获取推荐问题
     quick_replies = INTENT_QUICK_REPLIES.get(intent, [])
 
     return {
-        "answer": answer,
+        "answer": strip_markdown(answer),
         "session_id": session_id,
         "ai_type": ai_type,
         "intent": intent_result,

@@ -1,7 +1,7 @@
 [project]
 name = "fastapiproject"
 version = "0.1.0"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.14"
 dependencies = [
     "fastapi>=0.136.1",
     "httpx>=0.28.1",
@@ -16,9 +16,13 @@ dependencies = [
     "uvicorn>=0.46.0",
     "accelerate>=1.1.0",
     "python-jose[cryptography]>=3.3.0",
-    "passlib[bcrypt]==1.7.4",
-    "bcrypt==3.2.2",
+    "passlib[bcrypt]>=1.7.4",
     "sqlalchemy>=2.0.0",
     "pymysql>=1.1.0",
     "cryptography>=41.0.0",
+    "faiss-cpu>=1.13.2",
+    "olefile>=0.47",
 ]
+
+[tool.uv]
+link-mode = "copy"

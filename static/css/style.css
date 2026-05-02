@@ -149,6 +149,29 @@ body {
     font-weight: 600;
 }
 
+.chat-title-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 当前模式标签 */
+.mode-badge {
+    padding: 4px 12px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.35);
+    transition: all 0.3s ease;
+}
+
+.mode-badge.deepseek-mode {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+
 .header-actions {
     display: flex;
     gap: 8px;
@@ -166,6 +189,38 @@ body {
 
 .btn-icon:hover {
     background: var(--border);
+}
+
+/* AI 模式切换 */
+.ai-toggle {
+    display: flex;
+    gap: 0;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 2px solid var(--border);
+}
+
+.ai-toggle-btn {
+    padding: 7px 16px;
+    border: none;
+    background: white;
+    color: var(--text-light);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.ai-toggle-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.ai-toggle-btn:hover:not(.active) {
+    background: var(--bg);
+    color: var(--primary);
 }
 
 /* 消息区域 */
@@ -471,3 +526,4 @@ body {
     }
     .sidebar { display: none; }
 }
+

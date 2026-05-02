@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 *)",
+      "Bash(uv add *)",
+      "Bash(python -c \"import json; data = json.load\\(open\\('data/campus_knowledge.json', 'r', encoding='utf-8'\\)\\); print\\(f'OK, {len\\(data\\)} entries'\\)\")",
+      "Bash(python -c \"import json, re; content = open\\('data/campus_knowledge.json','r',encoding='utf-8'\\).read\\(\\); lines = content.split\\(chr\\(10\\)\\); [print\\(f'L{i}: {repr\\(lines[i-1][:200]\\)}'\\) for i in range\\(115,122\\)]\")",
+      "Bash(python -c \"import json; data = json.load\\(open\\('data/campus_knowledge.json','r',encoding='utf-8'\\)\\); print\\('OK,', len\\(data\\), 'entries'\\)\")",
+      "Bash(python -c \"import json; data=json.load\\(open\\('crawler/output/竞赛知识库.txt','r',encoding='utf-8'\\)\\); print\\(f'{len\\(data\\)} entries'\\); e = data[0]; print\\('Keys:', list\\(e.keys\\(\\)\\)\\); print\\('knowledge_text sample:', e.get\\('knowledge_text',''\\)[:200]\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(uv run python -c ' *)",
+      "Bash(.venv/Scripts/python.exe -c ' *)",
+      "Bash(uv sync *)",
+      "Bash(.venv/Scripts/python.exe -c \"from app.services.rag_service import get_rag_service; rag = get_rag_service\\(\\); rag.load_knowledge_bases\\(\\); rag.load_embedding_model\\(\\); rag.build_index\\(\\); print\\('RAG OK'\\)\")"
+    ]
+  }
+}

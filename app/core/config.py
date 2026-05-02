@@ -9,10 +9,10 @@ class Settings(BaseSettings):
     DEEPSEEK_BASE_URL: str = "https://api.deepseek.com"
     DEEPSEEK_MODEL: str = "deepseek-chat"
 
-    # FastGPT API（兼容 OpenAI 接口）
-    FASTGPT_API_KEY: str = ""
-    FASTGPT_BASE_URL: str = "https://cloud.fastgpt.cn/api/v1"
-    FASTGPT_APP_ID: str = ""
+    # 本地 RAG 配置（嵌入模型使用 task/output/best_model/ 的本地 BERT）
+    EMBEDDING_DEVICE: str = "cpu"
+    RETRIEVAL_TOP_K: int = 5
+    RETRIEVAL_MIN_SCORE: float = 0.3
 
     # JWT 配置
     SECRET_KEY: str = "your-super-secret-key-change-this-in-production-min-32-chars"
@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"  # 忽略 .env 中未定义的字段
 
 
 @lru_cache()

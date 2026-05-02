@@ -14,8 +14,8 @@ from app.nlp.tasks import (
 )
 from app.models.auth_schemas import UserLogin, UserRegister, Token, User
 from app.services.db_user_service import authenticate_user, create_user, get_user_by_username, get_user_by_email
-from app.utils.auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
-from app.api.auth import get_current_active_user
+from app.utils.auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES, blacklist_token
+from app.api.auth import get_current_active_user, oauth2_scheme
 from app.db.session import get_db
 
 router = APIRouter()
@@ -93,6 +93,13 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     }
 
 
+@router.post("/auth/logout")
+async def logout(current_user: dict = Depends(get_current_active_user), token: str = Depends(oauth2_scheme)):
+    """用户登出 - 将当前令牌加入黑名单"""
+    blacklist_token(token)
+    return {"message": "登出成功"}
+
+
 @router.get("/auth/me", response_model=User)
 async def read_users_me(current_user: dict = Depends(get_current_active_user)):
     """获取当前用户信息"""
@@ -108,15 +115,15 @@ async def read_users_me(current_user: dict = Depends(get_current_active_user)):
 async def chat(request: ChatRequest):
     """
     智能问答接口
-    - ai_type="fastgpt": 使用 FastGPT 知识库 RAG 问答
+    - ai_type="rag": 使用本地 RAG 知识库问答（嵌入检索 + DeepSeek 生成）
     - ai_type="deepseek": 使用 DeepSeek 直接对话
     服务端维护会话历史，前端只需传 session_id
     """
     if not request.question or not request.question.strip():
         raise HTTPException(status_code=400, detail="问题不能为空")
 
-    if request.ai_type not in ["fastgpt", "deepseek"]:
-        raise HTTPException(status_code=400, detail="无效的 AI 类型，请使用 fastgpt 或 deepseek")
+    if request.ai_type not in ["rag", "deepseek", "fastgpt"]:
+        raise HTTPException(status_code=400, detail="无效的 AI 类型，请使用 rag 或 deepseek")
 
     try:
         result = process_query(
@@ -160,6 +167,19 @@ async def get_intents():
         "categories": INTENT_CATEGORIES,
         "quick_replies": INTENT_QUICK_REPLIES,
     }
+
+
+@router.post("/knowledge/reindex")
+async def reindex_knowledge():
+    """重新加载知识库并重建 FAISS 索引（用于热更新知识库数据）"""
+    try:
+        from app.services.rag_service import get_rag_service
+        rag = get_rag_service()
+        doc_count = rag.load_knowledge_bases()
+        rag.build_index()
+        return {"status": "ok", "document_count": doc_count}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"重建索引失败: {str(e)}")
 
 
 @router.get("/knowledge")
